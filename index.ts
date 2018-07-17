@@ -222,11 +222,15 @@ module app {
             for (const id of config["users"]) {
                 const rawSubmissions = this.api.getResults(id) as any[];
                 const submissions = [];
+                const solved = new Set();
                 for (const submission of rawSubmissions) {
                     if (submission["result"] != "AC") continue;
                     const date = new Date(submission["epoch_second"] * 1000);
                     const delta = getDifferenceOfDates(now, date);
                     if (delta > 365) continue;
+                    const contestId = submission["contest_id"];
+                    if (solved.has(contestId)) continue;
+                    solved.add(contestId);
                     const point = parseFloat(submission["point"]);
                     const isRated = (contests[submission["contest_id"]] as any)["rate_change"] != "×";
                     submissions.push([ date, scoreFunc(point, isRated) ]);
