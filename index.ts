@@ -205,19 +205,26 @@ module app {
             window.history.replaceState(null, "", location.pathname + "?" + params);
         }
 
+        private getXAxis(): Date[] {
+            const config = this.getConfig();
+            const now = new Date();
+            const xAxis = [] as Date[];
+            for (let i = config["duration"] - 1; i >= 0; -- i) {
+                xAxis.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i));  // NOTE: non-positive date is adjusted
+            }
+            return xAxis;
+        }
+
         private makeSeries(): object[] {
             const config = this.getConfig();
             const scoreFunc = new Function("score", "isRated", "return " + config["score"]);
             const averageFunc = new Function("delta", "return " + config["average"]);
 
             const now = new Date();
+            const xAxis = this.getXAxis();
             const contests = this.api.getContestsAsDictionary();
 
             const series = [] as object[];
-            const xAxis = [] as Date[];
-            for (let i = config["duration"] - 1; i >= 0; -- i) {
-                xAxis.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i));  // NOTE: non-positive date is adjusted
-            }
 
             for (const id of config["users"]) {
                 const rawSubmissions = this.api.getResults(id) as any[];
@@ -256,6 +263,7 @@ module app {
 
         private plotGraph() {
             const config = this.getConfig();
+            const xAxis = this.getXAxis();
             this.api.prepareContests(() => {
                 this.api.prepareResultsAtOnce(config["users"], () => {
                     this.chart = Highcharts.chart("chartContainer", {
@@ -265,13 +273,18 @@ module app {
                         xAxis: {
                             type: "datetime",
                             title: { text: null },
-                            labels: { enabled: false },
+                            labels: {
+                                formatter: function () {
+                                    return Highcharts.dateFormat("%e. %b", xAxis[this.value].getTime());
+                                },
+                            },
                         },
                         yAxis: {
                             title: { text: null },
                             min: 0,
                         },
                         tooltip: {
+                            headerFormat: "",
                             shared: true,
                             crosshairs: true,
                         },
