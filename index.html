@@ -68,10 +68,10 @@
                             <label class="ui label">
                                 function (score, isRated) { return
                             </label>
-                            <input type="text" id="scoreInput" placeholder="isRated ? Math.pow(score, 2) : score" />
+                            <input type="text" id="scoreInput" placeholder="Math.pow(score, 2) * (isRated ? 1 : 1/3)" />
                             <label class="ui label">
                                 ; }
-                                <i class="question circle icon" data-content="生の点数を修正する関数 (default: ratedコンテストは二乗、unratedコンテストはそのまま)"></i>
+                                <i class="question circle icon" data-content="生の点数を修正する関数 (default: 生の点数の2乗、ただしunratedコンテストはその後1/3)"></i>
                             </label>
                         </div>
                     </div>
@@ -87,7 +87,7 @@
                             <input type="text" id="averageInput" placeholder="Math.max(0, 1 - delta / 7)" />
                             <label class="ui label">
                                 ; }
-                                <i class="question circle icon" data-content="修正された点数の総和を取るときの重み (default: 一週間で0になる線形加重移動平均)"></i>
+                                <i class="question circle icon" data-content="修正された点数の総和を取るときの重み (default: 1週間で0になる線形加重移動平均)"></i>
                             </label>
                         </div>
                     </div>
