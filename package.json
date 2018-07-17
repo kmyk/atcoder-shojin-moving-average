@@ -1,0 +1,25 @@
+{
+  "name": "atcoder-shojin-moving-average",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/highcharts": "^5.0.25",
+    "@types/url-search-params": "^0.10.2",
+    "typescript": "^2.9.2"
+  },
+  "scripts": {
+    "build": "tsc --target ES2017 index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmyk/atcoder-shojin-moving-average.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kmyk/atcoder-shojin-moving-average/issues"
+  },
+  "homepage": "https://github.com/kmyk/atcoder-shojin-moving-average#readme"
+}
