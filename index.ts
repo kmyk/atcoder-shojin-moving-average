@@ -235,9 +235,9 @@ module app {
                     const date = new Date(submission["epoch_second"] * 1000);
                     const delta = getDifferenceOfDates(now, date);
                     if (delta > 365) continue;
-                    const contestId = submission["contest_id"];
-                    if (solved.has(contestId)) continue;
-                    solved.add(contestId);
+                    const problemId = submission["problem_id"];
+                    if (solved.has(problemId)) continue;
+                    solved.add(problemId);
                     const point = parseFloat(submission["point"]);
                     const isRated = (contests[submission["contest_id"]] as any)["rate_change"] != "×";
                     submissions.push([ date, scoreFunc(point, isRated) ]);
