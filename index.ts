@@ -210,7 +210,7 @@ module app {
             const now = new Date();
             const xAxis = [] as Date[];
             for (let i = config["duration"] - 1; i >= 0; -- i) {
-                xAxis.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i + 1, 23, 59, 59));  // NOTE: non-positive date is adjusted
+                xAxis.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i, 23, 59, 59));  // NOTE: non-positive date is adjusted
             }
             return xAxis;
         }
