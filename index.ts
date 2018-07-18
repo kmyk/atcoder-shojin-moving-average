@@ -82,12 +82,14 @@ module app {
         return Math.floor((future.getTime() - past.getTime()) / (1000 * 60 * 60 * 24));
     }
 
+    // this should be a class with loadParams() / storeParams()
     interface Config {
         [index: string]: any;
         users: string[];
         duration: number;
         score: string;
         average: string;
+        normalize: string;
     }
 
     export class App {
@@ -96,6 +98,7 @@ module app {
         private durationInput: HTMLInputElement;
         private scoreInput: HTMLInputElement;
         private averageInput: HTMLInputElement;
+        private normalizeInput: HTMLInputElement;
         private goButton: HTMLInputElement;
         private configDetails: HTMLDetailsElement;
         private chart: any;
@@ -106,6 +109,7 @@ module app {
             this.durationInput = <HTMLInputElement> document.getElementById("durationInput");
             this.scoreInput = <HTMLInputElement> document.getElementById("scoreInput");
             this.averageInput = <HTMLInputElement> document.getElementById("averageInput");
+            this.normalizeInput = <HTMLInputElement> document.getElementById("normalizeInput");
             this.goButton = <HTMLInputElement> document.getElementById("goButton");
             this.configDetails = <HTMLDetailsElement> document.getElementById("configDetails");
 
@@ -152,6 +156,12 @@ module app {
                 this.averageInput.value = value;
                 this.configDetails.open = true;
             }
+
+            value = params.get("normalize");
+            if (value) {
+                this.normalizeInput.value = value;
+                this.configDetails.open = true;
+            }
         }
 
         private getDefaultConfig(): Config {
@@ -160,6 +170,7 @@ module app {
                 "duration": parseInt(this.durationInput.placeholder),
                 "score": this.scoreInput.placeholder,
                 "average": this.averageInput.placeholder,
+                "normalize": this.normalizeInput.placeholder,
             };
         }
 
@@ -182,6 +193,10 @@ module app {
                 data["average"] = this.averageInput.value;
             }
 
+            if (this.normalizeInput.value) {
+                data["normalize"] = this.normalizeInput.value;
+            }
+
             return data;
         }
 
@@ -190,7 +205,7 @@ module app {
             const defaultConfig = this.getDefaultConfig();  
             const params = (new URL(location.href)).searchParams;
 
-            for (const key of [ "users", "duration", "score", "average" ]) {
+            for (const key of [ "users", "duration", "score", "average", "normalize" ]) {
                 if (JSON.stringify(config[key]) == JSON.stringify(defaultConfig[key])) {
                     params.delete(key);
                 } else {
@@ -219,6 +234,7 @@ module app {
             const config = this.getConfig();
             const scoreFunc = new Function("score", "isRated", "return " + config["score"]);
             const averageFunc = new Function("delta", "return " + config["average"]);
+            const normalizeFunc = new Function("sum", "return " + config["normalize"]);
 
             const now = new Date();
             const xAxis = this.getXAxis();
@@ -248,6 +264,7 @@ module app {
                     if (solved.has(problemId)) continue;
                     solved.add(problemId);
                     const point = parseFloat(submission["point"]);
+                    if (point > 3000) continue;  // ignored, since it seems be not a usual score
                     const isRated = (contests[submission["contest_id"]] as any)["rate_change"] != "×";
                     submissions.push([ date, scoreFunc(point, isRated) ]);
                 }
@@ -259,7 +276,9 @@ module app {
                             y += averageFunc(getDifferenceOfDates(x, it[0])) * it[1];
                         }
                     }
-                    data.push([ x, Math.round(y * 100) / 100 ]);
+                    y = normalizeFunc(y);
+                    y = Math.round(y * 100) / 100;
+                    data.push([ x, y ]);
                 }
                 series.push({
                     "name": id,

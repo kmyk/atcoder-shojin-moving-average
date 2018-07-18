@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AtCoderで解いた問題の点数の二乗和の移動平均をグラフにするやつ</title>
+    <title>AtCoderで解いた問題の点数の三乗和の移動平均をグラフにするやつ</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.1/dist/semantic.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui-popup@2.3.1/popup.min.css">
@@ -18,7 +18,7 @@
 <body>
     <div class="ui menu">
         <div class="item">
-            <h1>AtCoderで解いた問題の点数の二乗和の移動平均をグラフにするやつ</h1>
+            <h1>AtCoderで解いた問題の点数の三乗和の移動平均をグラフにするやつ</h1>
         </div>
         <div class="right item">
             <a href="https://github.com/kmyk/atcoder-shojin-moving-average"><i class="code icon"></i>source</a>
@@ -33,9 +33,9 @@
                     <div class="ui labeled input">
                         <label class="ui label">
                             users
-                            <i class="question circle icon" data-content="AtCoder IDを空白区切りで、case-sensitiveなので注意"></i>  <!-- TODO: ask Kenkoooo to modify the API case-insensitive -->
+                            <i class="question circle icon" data-content="AtCoder IDを空白区切り (case-sensitiveなので注意)"></i>  <!-- TODO: ask Kenkoooo to modify the API case-insensitive -->
                         </label>
-                        <input type="text" id="usersInput" placeholder="kimiyuki kurenai3110 cormoran takeo1116 kureanif KokiYmgch">
+                        <input type="text" id="usersInput" placeholder="kimiyuki kurenai3110 cormoran takeo1116 kurenaif KokiYmgch">
                         <button type="submit" id="goButton" class="ui primary button">
                             Go
                         </button>
@@ -47,20 +47,28 @@
 		<summary>これは何</summary>
 
                 <p>
-                    自分が楽に解ける難易度の問題を漫然と埋めてなにか精進をした気分になっているようではいけないなと思ったので作った道具です。
-                    精進の量を可視化しようと思ったとき、従来の手法では、200点問題を5問解くのが1000点問題を1問解くのと同じ価値のように見えてしまったり、5日間かけて2000点問題を解くような精進の仕方をしていると精進をさぼっているように見えてしまったりするという問題がありました。
-                    これらの問題が解決される形の計算式を用いてグラフを生成します。
-                </p>
-
-                <p>
-                    精進量の計算式は $$\sum_{i \lt n} \left( a_i^2 \cdot \max\left(0, \, 1 - \frac{d_i - d_\star}{7}\right) \right)$$ です。
-                    \(d_\star\) は注目する日付で、 \(i = 0, 1, \dots, n - 1\) に対し \(a_i\) と \(d_i \lt d_\star\) はそれぞれ解いた問題の得点と解いた日付です。
-                    ただしunratedなコンテストの問題は \(a_i^2\) でなく \(\frac{a_i^2}{3}\) を使います。
+                    自分が楽に解ける難易度の問題を漫然と埋めてなにか精進をした気分になっているようではいけないなと思ったので作ったページです。
+                    精進の量を可視化しようと思ったとき、従来の手法では次のような問題がありました:
+                    <ul>
+                        <li>例えば、200点問題を5問解くのが1000点問題を1問解くのと同じ価値のように見えてしまう</li>
+                        <li>例えば、5日間かけて2000点問題を解くような生活をしているとなんだか精進をさぼっているように見えてしまう</li>
+                    </ul>
+                    このページではこれらの問題が解決される形の計算式を用いてグラフを生成します。
+                    精進量の計算式は点数の三乗和の指数移動平均の立方根 \[ \sqrt[3]{ \sum_{i \lt n} \left( a_i^3 \exp\left(- d_i / 1.5 \right) \right) } \] です。
+                    解いた問題 \(i = 0, 1, \dots, n - 1\) に対し \(a_i\) はその得点で \(d_i \ge 0\) は何日前に解いたかとします。
+                    ただしunratedなコンテストの問題は \(a_i^3\) でなく \(\frac{a_i^3}{3}\) を使います。
+                    この式は次のような特徴があります:
+                    <ul>
+                        <li>点数\(kx\)の問題を\(1\)問解くことは点数\(x\)の問題を\(k^3\)問解くことと同じ</li>
+                        <li>点数\(x\)の問題を解いた日はグラフ上で評価値が\(x\)以上になる</li>
+                        <li>点数\(x\)の問題を毎日\(1\)問解き続けると評価値が\(2x\)に収束する</li>
+                        <li>何も解かなければ\(3\)日で評価値が半減する</li>
+                    </ul>
                 </p>
             </details>
 
             <details id="configDetails">
-                <summary>詳細設定</summary>
+                <summary>内部設定</summary>
 
                 <div class="inline fields centered">
                     <div class="one wide field"></div>
@@ -83,14 +91,14 @@
                 <div class="inline fields">
                     <div class="one wide field"></div>
                     <div class="two wide field">
-                        得点<i class="question circle icon" data-content="生の点数を修正する関数"></i>:
+                        得点<i class="question circle icon" data-content="生の点数を三乗する部分 (なおunratedの問題はそもそも点数が付いてない場合があります)"></i>:
                     </div>
                     <div class="eleven wide field">
                         <div class="ui labeled input">
                             <label class="ui label">
                                 function (score, isRated) { return
                             </label>
-                            <input type="text" id="scoreInput" placeholder="Math.pow(score, 2) * (isRated ? 1 : 1/3)" />
+                            <input type="text" id="scoreInput" placeholder="Math.pow(score, 3) * (isRated ? 1 : 1/3)" />
                             <label class="ui label">
                                 ; }
                             </label>
@@ -108,7 +116,25 @@
                             <label class="ui label">
                                 function (delta) { return
                             </label>
-                            <input type="text" id="averageInput" placeholder="Math.max(0, 1 - delta / 7)" />
+                            <input type="text" id="averageInput" placeholder="Math.exp(- delta / 1.5)" />
+                            <label class="ui label">
+                                ; }
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline fields">
+                    <div class="one wide field"></div>
+                    <div class="two wide field">
+                        正規化<i class="question circle icon" data-content="最後に立方根を取る部分"></i>:
+                    </div>
+                    <div class="eleven wide field">
+                        <div class="ui labeled input">
+                            <label class="ui label">
+                                function (sum) { return
+                            </label>
+                            <input type="text" id="normalizeInput" placeholder="Math.pow(sum, 1/3)" />
                             <label class="ui label">
                                 ; }
                             </label>
