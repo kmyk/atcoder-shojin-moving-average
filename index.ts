@@ -227,10 +227,19 @@ module app {
             const series = [] as object[];
 
             for (const id of config["users"]) {
-                const rawSubmissions = this.api.getResults(id) as any[];
+                const results = this.api.getResults(id) as any[];
+                results.sort((a, b) => {
+                    if (a["problem_id"] < b["problem_id"]) return -1;
+                    if (a["problem_id"] > b["problem_id"]) return +1;
+                    if (a["point"] > b["point"]) return -1;  // for partial scores
+                    if (a["point"] < b["point"]) return +1;
+                    if (a["epoch_second"] < b["epoch_second"]) return -1;  // to ignore re-submissions
+                    if (a["epoch_second"] > b["epoch_second"]) return +1;
+                    return 0;
+                });
                 const submissions = [];
                 const solved = new Set();
-                for (const submission of rawSubmissions) {
+                for (const submission of results) {
                     if (submission["result"] != "AC") continue;
                     const date = new Date(submission["epoch_second"] * 1000);
                     const delta = getDifferenceOfDates(now, date);
